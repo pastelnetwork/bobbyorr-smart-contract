@@ -13,45 +13,54 @@ task("deploy:BobbyOrrDrop").setAction(async function (taskArguments: TaskArgumen
   const bobbyOrrDrop: BobbyOrrDrop = <BobbyOrrDrop>await upgrades.deployProxy(dropFactory, [
     "BobbyOrr",
     "BOB",
+    1444,
     "ipfs://Qmdt2pqCLefbM9hdRuvxyf5PtzBxvK2No4w5xVXU89GwKi/",
-    ethers.utils.parseEther("0.01"),
     "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd", // primary wallet
-    "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd", // secondary wallet
   ]);
 
   await bobbyOrrDrop.deployed();
   console.log("BobbyOrrDrop deployed to: ", bobbyOrrDrop.address);
 });
 
-task("test:createBobbyOrrDrop")
-  .addParam("address", "Contract address")
-  .addParam("name", "Contract name")
-  .addParam("symbol", "Contract symbol")
-  .addParam("uri", "Token URI")
-  .addParam("user", "User id")
-  .addParam("wallet", "Primary Wallet")
+task("test:setAllowListFanClubUsers")
+  .addParam("address", "Address")
   .setAction(async function (taskArguments: TaskArguments, hre) {
     const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
 
-    const response = await contract.createDrop(
-      taskArguments.name,
-      taskArguments.symbol,
-      taskArguments.uri,
-      100,
-      hre.ethers.utils.parseEther("0.001"),
-      taskArguments.royalty,
-      taskArguments.wallet,
-      {
-        gasLimit: 10000000,
-      },
-    );
+    const response = await contract.setAllowListFanClubUsers(new Array(1000).fill(0).map((_, index) => index + 1));
 
     const answer = await response.wait();
 
-    console.log(response, answer);
+    console.log(answer);
   });
 
-task("testBobbyOrrDrop:mint")
+task("test:setAllowListWhiteListUsers")
+  .addParam("address", "Address")
+  .setAction(async function (taskArguments: TaskArguments, hre) {
+    const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
+
+    const response = await contract.setAllowListFanClubUsers(new Array(1200).fill(0).map((_, index) => index + 1));
+
+    const answer = await response.wait();
+
+    console.log(answer);
+  });
+
+task("test:setStage")
+  .addParam("address", "Address")
+  .addParam("stage", "Stage")
+  .addParam("price", "Price")
+  .setAction(async function (taskArguments: TaskArguments, hre) {
+    const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
+
+    const response = await contract.setStage(taskArguments.stage, hre.ethers.utils.parseEther(taskArguments.price));
+
+    const answer = await response.wait();
+
+    console.log(answer);
+  });
+
+task("test:mint")
   .addParam("address", "Contract address")
   .addParam("user", "User id")
   .setAction(async function (taskArguments: TaskArguments, hre) {
