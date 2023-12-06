@@ -24,8 +24,11 @@ contract BobbyOrrDrop is
     string public baseURI;
     uint256 public price;
     address public primaryWallet;
-    address public pastelWallet;
+    uint256 public maxSupply;
     uint256 public stage; // 0 => FanClub, 1 => PrivateSale, 2 => PublicSale
+    mapping(uint256 => bool) public isFanClubUser;
+    mapping(uint256 => bool) public isWhitelisted;
+    mapping(uint256 => bool) public hasUserMinted;
     uint256[] public allowListFanClubUsers;
     uint256[] public allowListWhiteListUsers;
 
@@ -43,56 +46,40 @@ contract BobbyOrrDrop is
     function initialize(
         string memory _name,
         string memory _symbol,
+        uint256 _maxSupply,
         string memory _baseTokenURI,
-        uint256 _price,
-        address _primaryWallet,
-        address _pastelWallet
+        address _primaryWallet
     ) public initializer {
         require(!initialized, "Already initialized");
-        require(
-            _primaryWallet != address(0) && _pastelWallet != address(0),
-            "Invalid primary, or pastel wallet address"
-        );
+        require(_primaryWallet != address(0), "Invalid primary, or pastel wallet address");
 
         __ERC721_init(_name, _symbol);
         __Ownable_init();
         baseURI = _baseTokenURI;
-        price = _price;
         primaryWallet = _primaryWallet;
-        pastelWallet = _pastelWallet;
 
+        maxSupply = _maxSupply;
         nextTokenId = 1;
         initialized = true;
+        stage = 0;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function mint(uint256 _userId) external payable nonReentrant {
-        bool isFanClubUser = false;
-        bool isWhiteListUser = false;
+        require(stage > 0, "Not started minting yet");
 
-        for (uint256 i = 0; i < allowListFanClubUsers.length; i++) {
-            if (allowListFanClubUsers[i] == _userId) {
-                isFanClubUser = true;
-                break;
-            }
+        if (stage == 1) {
+            require(isFanClubUser[_userId], "Invalid mint request from not fan club user");
+        } else if (stage == 2) {
+            require(isWhitelisted[_userId], "Invalid mint request from not whitelisted user");
         }
-        for (uint256 i = 0; i < allowListWhiteListUsers.length; i++) {
-            if (allowListWhiteListUsers[i] == _userId) {
-                isWhiteListUser = true;
-                break;
-            }
-        }
-
-        if (stage == 0) {
-            require(isFanClubUser);
-        } else if (stage == 1) {
-            require(isWhiteListUser);
-        }
-
+        require(!hasUserMinted[_userId], "This user has already minted a token");
         require(msg.value == price, "Insufficient price");
+        require(nextTokenId < maxSupply + 1, "No available tokens");
 
         _safeMint(msg.sender, nextTokenId);
+        hasUserMinted[_userId] = true;
 
         emit Minted(msg.sender, _userId, nextTokenId);
 
@@ -101,6 +88,12 @@ contract BobbyOrrDrop is
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
+    }
+
+    function setMaxSupply(uint256 _maxSupply) external onlyOwner {
+        require(_maxSupply > nextTokenId, "Invalid maxSupply updating request");
+
+        maxSupply = _maxSupply;
     }
 
     function setBaseURI(string calldata _uri) external onlyOwner {
@@ -119,26 +112,23 @@ contract BobbyOrrDrop is
         primaryWallet = _primaryWallet;
     }
 
-    function setStage(uint256 _stage) external onlyOwner {
-        require(_stage < 3 && _stage >= 0, "Invalid stage");
-
-        if (_stage == 0) {
-            price = 10000000000000000;
-        } else if (_stage == 1) {
-            price = 20000000000000000;
-        } else {
-            price = 40000000000000000;
-        }
+    function setStage(uint256 _stage, uint256 _price) external onlyOwner {
+        require(_stage < 4 && _stage > 0 && _stage > stage, "Invalid stage");
 
         stage = _stage;
+        price = _price;
     }
 
     function setAllowListFanClubUsers(uint256[] memory _allowListFanClubUsers) external onlyOwner {
-        allowListFanClubUsers = _allowListFanClubUsers;
+        for (uint256 i = 0; i < _allowListFanClubUsers.length; i++) {
+            isFanClubUser[_allowListFanClubUsers[i]] = true;
+        }
     }
 
     function setAllowListWhiteListUsers(uint256[] memory _allowListWhiteListUsers) external onlyOwner {
-        allowListWhiteListUsers = _allowListWhiteListUsers;
+        for (uint256 i = 0; i < _allowListWhiteListUsers.length; i++) {
+            isWhitelisted[_allowListWhiteListUsers[i]] = true;
+        }
     }
 
     function totalBalance() external view returns (uint256) {
@@ -151,11 +141,11 @@ contract BobbyOrrDrop is
 
     function withdraw() external onlyOwner nonReentrant {
         require(
-            address(this).balance > 0 && pastelWallet != address(0),
+            address(this).balance > 0 && primaryWallet != address(0),
             "No funds to withdraw, or invalid wallet address to send."
         );
 
-        payable(pastelWallet).transfer(address(this).balance);
+        payable(primaryWallet).transfer(address(this).balance);
 
         address payable to = payable(msg.sender);
         require(to != address(0), "Invalid recipient address");
