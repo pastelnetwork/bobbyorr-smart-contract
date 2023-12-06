@@ -1,12 +1,12 @@
 import { ethers, upgrades } from "hardhat";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 
-import type { BobbyOrrDrop } from "../../src/types/BobbyOrrDrop";
-import type { BobbyOrrDrop__factory } from "../../src/types/factories/BobbyOrrDrop__factory";
+import type { BobbyOrrDrop } from "../src/types/BobbyOrrDrop";
+import type { BobbyOrrDrop__factory } from "../src/types/factories/BobbyOrrDrop__factory";
 
-import { Signers } from "../types";
+import { Signers } from "./types";
 
-import { shouldBehaveLikeBobbyOrrDrop } from "./BobbyOrrDrop.behavior";
+import { shouldBehaveLikeBobbyOrrDrop } from "./BobbyOrrDrop.behavior.test";
 
 describe("BobbyOrrDrop", function () {
   before(async function () {
@@ -23,9 +23,8 @@ describe("BobbyOrrDrop", function () {
       await upgrades.deployProxy(dropFactory, [
         "BobbyOrrSample",
         "BOBSample",
+        1444,
         "base_uri",
-        ethers.utils.parseEther("0.01"),
-        "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd",
         "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd",
       ])
     );
