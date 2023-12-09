@@ -66,7 +66,8 @@ contract BobbyOrrDrop is
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
-    function mint(uint256 _userId) external payable nonReentrant {
+    function mint(uint256 _userId, address _to, uint256 _quantity) external payable nonReentrant {
+        require(_quantity == 1, "Users can only mint one token at a time");
         require(stage > 0, "Not started minting yet");
 
         if (stage == 1) {
