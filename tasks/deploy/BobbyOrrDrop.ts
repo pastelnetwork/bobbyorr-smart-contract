@@ -22,24 +22,52 @@ task("deploy:BobbyOrrDrop").setAction(async function (taskArguments: TaskArgumen
   console.log("BobbyOrrDrop deployed to: ", bobbyOrrDrop.address);
 });
 
-task("test:setAllowListFanClubUsers")
+task("test:setFanClubSmartmint")
   .addParam("address", "Address")
   .setAction(async function (taskArguments: TaskArguments, hre) {
     const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
 
-    const response = await contract.setAllowListFanClubUsers(new Array(1000).fill(0).map((_, index) => index + 1));
+    const response = await contract.setFanClubSmartmintUsers(new Array(10).fill(0).map((_, index) => index + 1));
 
     const answer = await response.wait();
 
     console.log(answer);
   });
 
-task("test:setAllowListWhiteListUsers")
+task("test:setWhiteListSmartmint")
   .addParam("address", "Address")
   .setAction(async function (taskArguments: TaskArguments, hre) {
     const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
 
-    const response = await contract.setAllowListFanClubUsers(new Array(1200).fill(0).map((_, index) => index + 1));
+    const response = await contract.setWhiteListSmartmintUsers(new Array(20).fill(0).map((_, index) => index + 1));
+
+    const answer = await response.wait();
+
+    console.log(answer);
+  });
+
+task("test:setFanClubAddresses")
+  .addParam("address", "Address")
+  .setAction(async function (taskArguments: TaskArguments, hre) {
+    const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
+
+    const response = await contract.setFanClubAddresses(
+      new Array(10).fill(0).map((_, index) => "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd"),
+    );
+
+    const answer = await response.wait();
+
+    console.log(answer);
+  });
+
+task("test:setWhiteListAddresses")
+  .addParam("address", "Address")
+  .setAction(async function (taskArguments: TaskArguments, hre) {
+    const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
+
+    const response = await contract.setWhiteListAddresses(
+      new Array(20).fill(0).map((_, index) => "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd"),
+    );
 
     const answer = await response.wait();
 
@@ -63,12 +91,18 @@ task("test:setStage")
 task("test:mint")
   .addParam("address", "Contract address")
   .addParam("user", "User id")
+  .addParam("count", "Mint Quantity")
   .setAction(async function (taskArguments: TaskArguments, hre) {
     const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
 
-    const response = await contract.mint(taskArguments.user, {
-      value: hre.ethers.utils.parseEther("0.001"),
-    });
+    const response = await contract.mint(
+      taskArguments.user,
+      "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd",
+      parseInt(taskArguments.count),
+      {
+        value: hre.ethers.utils.parseEther("0.002"),
+      },
+    );
 
     const answer = await response.wait();
 

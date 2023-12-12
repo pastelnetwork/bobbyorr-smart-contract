@@ -26,11 +26,13 @@ contract BobbyOrrDrop is
     address public primaryWallet;
     uint256 public maxSupply;
     uint256 public stage; // 0 => FanClub, 1 => PrivateSale, 2 => PublicSale
-    mapping(uint256 => bool) public isFanClubUser;
-    mapping(uint256 => bool) public isWhitelisted;
-    mapping(uint256 => bool) public hasUserMinted;
-    uint256[] public allowListFanClubUsers;
-    uint256[] public allowListWhiteListUsers;
+    mapping(uint256 => bool) public isFanClubSmartmint;
+    mapping(uint256 => bool) public isWhitelistedSmartmint;
+    mapping(uint256 => bool) public hasUserMintedSmartmint;
+
+    mapping(address => bool) public isFanClubAddress;
+    mapping(address => bool) public isWhitelistedAddress;
+    mapping(address => bool) public hasUserMintedAddress;
 
     event Minted(address indexed _to, uint256 _userId, uint256 _tokenId);
     event BaseURIChanged(string _uri);
@@ -67,24 +69,32 @@ contract BobbyOrrDrop is
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function mint(uint256 _userId, address _to, uint256 _quantity) external payable nonReentrant {
-        require(_quantity == 1, "Users can only mint one token at a time");
+        require(_quantity < 3 && _quantity > 0, "Users can only mint one or two tokens at a time");
         require(stage > 0, "Not started minting yet");
+        bool isAddress = _userId == 0;
 
         if (stage == 1) {
-            require(isFanClubUser[_userId], "Invalid mint request from not fan club user");
+            require(isFanClubSmartmint[_userId] || (isAddress && isFanClubAddress[msg.sender]), "Invalid mint request from not fan club user");
         } else if (stage == 2) {
-            require(isWhitelisted[_userId], "Invalid mint request from not whitelisted user");
+            require(isWhitelistedSmartmint[_userId] || (isAddress && isWhitelistedAddress[msg.sender]), "Invalid mint request from not whitelisted user");
         }
-        require(!hasUserMinted[_userId], "This user has already minted a token");
-        require(msg.value == price, "Insufficient price");
-        require(nextTokenId < maxSupply + 1, "No available tokens");
+        require(isAddress ? !hasUserMintedAddress[msg.sender] : !hasUserMintedSmartmint[_userId], "This user has already minted a token");
+        require(msg.value == price*_quantity, "Insufficient price");
 
-        _safeMint(msg.sender, nextTokenId);
-        hasUserMinted[_userId] = true;
+        for (uint256 i = 0; i < _quantity; i ++) {
+            require(nextTokenId < maxSupply + 1, "No available tokens");
+            _safeMint(msg.sender, nextTokenId);
 
-        emit Minted(msg.sender, _userId, nextTokenId);
+            if (isAddress) {
+                hasUserMintedAddress[msg.sender] = true;
+            } else {
+                hasUserMintedSmartmint[_userId] = true;
+            }
 
-        nextTokenId += 1;
+            emit Minted(msg.sender, _userId, nextTokenId);
+
+            nextTokenId += 1;
+        }
     }
 
     function _baseURI() internal view override returns (string memory) {
@@ -120,15 +130,27 @@ contract BobbyOrrDrop is
         price = _price;
     }
 
-    function setAllowListFanClubUsers(uint256[] memory _allowListFanClubUsers) external onlyOwner {
-        for (uint256 i = 0; i < _allowListFanClubUsers.length; i++) {
-            isFanClubUser[_allowListFanClubUsers[i]] = true;
+    function setFanClubSmartmintUsers(uint256[] memory _fanClubUsers) external onlyOwner {
+        for (uint256 i = 0; i < _fanClubUsers.length; i++) {
+            isFanClubSmartmint[_fanClubUsers[i]] = true;
         }
     }
 
-    function setAllowListWhiteListUsers(uint256[] memory _allowListWhiteListUsers) external onlyOwner {
-        for (uint256 i = 0; i < _allowListWhiteListUsers.length; i++) {
-            isWhitelisted[_allowListWhiteListUsers[i]] = true;
+    function setWhiteListSmartmintUsers(uint256[] memory _whiteListUsers) external onlyOwner {
+        for (uint256 i = 0; i < _whiteListUsers.length; i++) {
+            isWhitelistedSmartmint[_whiteListUsers[i]] = true;
+        }
+    }
+
+    function setFanClubAddresses(address[] memory _fanClubAddresses) external onlyOwner {
+        for (uint256 i = 0; i < _fanClubAddresses.length; i++) {
+            isFanClubAddress[_fanClubAddresses[i]] = true;
+        }
+    }
+
+    function setWhiteListAddresses(address[] memory _whiteListAddresses) external onlyOwner {
+        for (uint256 i = 0; i < _whiteListAddresses.length; i++) {
+            isWhitelistedAddress[_whiteListAddresses[i]] = true;
         }
     }
 
