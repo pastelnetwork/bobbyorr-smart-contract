@@ -25,7 +25,7 @@ contract BobbyOrrDrop is
     uint256 public price;
     address public primaryWallet;
     uint256 public maxSupply;
-    uint256 public stage; // 0 => FanClub, 1 => PrivateSale, 2 => PublicSale
+    uint256 public stage; // 1 => FanClub, 2 => PrivateSale, 3 => PublicSale
     mapping(uint256 => bool) public isFanClubSmartmint;
     mapping(uint256 => bool) public isWhitelistedSmartmint;
     mapping(uint256 => bool) public hasUserMintedSmartmint;
@@ -74,14 +74,23 @@ contract BobbyOrrDrop is
         bool isAddress = _userId == 0;
 
         if (stage == 1) {
-            require(isFanClubSmartmint[_userId] || (isAddress && isFanClubAddress[msg.sender]), "Invalid mint request from not fan club user");
+            require(
+                isFanClubSmartmint[_userId] || (isAddress && isFanClubAddress[msg.sender]),
+                "Invalid mint request from not fan club user"
+            );
         } else if (stage == 2) {
-            require(isWhitelistedSmartmint[_userId] || (isAddress && isWhitelistedAddress[msg.sender]), "Invalid mint request from not whitelisted user");
+            require(
+                isWhitelistedSmartmint[_userId] || (isAddress && isWhitelistedAddress[msg.sender]),
+                "Invalid mint request from not whitelisted user"
+            );
         }
-        require(isAddress ? !hasUserMintedAddress[msg.sender] : !hasUserMintedSmartmint[_userId], "This user has already minted a token");
-        require(msg.value == price*_quantity, "Insufficient price");
+        require(
+            isAddress ? !hasUserMintedAddress[msg.sender] : !hasUserMintedSmartmint[_userId],
+            "This user has already minted a token"
+        );
+        require(msg.value == price * _quantity, "Insufficient price");
 
-        for (uint256 i = 0; i < _quantity; i ++) {
+        for (uint256 i = 0; i < _quantity; i++) {
             require(nextTokenId < maxSupply + 1, "No available tokens");
             _safeMint(msg.sender, nextTokenId);
 
