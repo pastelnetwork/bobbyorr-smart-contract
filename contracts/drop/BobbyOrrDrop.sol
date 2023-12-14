@@ -26,13 +26,14 @@ contract BobbyOrrDrop is
     address public primaryWallet;
     uint256 public maxSupply;
     uint256 public stage; // 1 => FanClub, 2 => PrivateSale, 3 => PublicSale
+    uint256 public maxPurchaseableCount;
     mapping(uint256 => bool) public isFanClubSmartmint;
     mapping(uint256 => bool) public isWhitelistedSmartmint;
-    mapping(uint256 => bool) public hasUserMintedSmartmint;
+    mapping(uint256 => uint256) public hasUserMintedSmartmint;
 
     mapping(address => bool) public isFanClubAddress;
     mapping(address => bool) public isWhitelistedAddress;
-    mapping(address => bool) public hasUserMintedAddress;
+    mapping(address => uint256) public hasUserMintedAddress;
 
     event Minted(address indexed _to, uint256 _userId, uint256 _tokenId);
     event BaseURIChanged(string _uri);
@@ -49,6 +50,7 @@ contract BobbyOrrDrop is
         string memory _name,
         string memory _symbol,
         uint256 _maxSupply,
+        uint256 _maxPurchaseableCount,
         string memory _baseTokenURI,
         address _primaryWallet
     ) public initializer {
@@ -61,6 +63,7 @@ contract BobbyOrrDrop is
         primaryWallet = _primaryWallet;
 
         maxSupply = _maxSupply;
+        maxPurchaseableCount = _maxPurchaseableCount;
         nextTokenId = 1;
         initialized = true;
         stage = 0;
@@ -69,7 +72,10 @@ contract BobbyOrrDrop is
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function mint(uint256 _userId, address _to, uint256 _quantity) external payable nonReentrant {
-        require(_quantity < 3 && _quantity > 0, "Users can only mint one or two tokens at a time");
+        require(
+            _quantity <= maxPurchaseableCount && _quantity > 0,
+            "Users can only mint from one to three tokens at a time"
+        );
         require(stage > 0, "Not started minting yet");
         bool isAddress = _userId == 0;
 
@@ -85,7 +91,9 @@ contract BobbyOrrDrop is
             );
         }
         require(
-            isAddress ? !hasUserMintedAddress[msg.sender] : !hasUserMintedSmartmint[_userId],
+            isAddress
+                ? hasUserMintedAddress[msg.sender] + _quantity <= maxPurchaseableCount
+                : hasUserMintedSmartmint[_userId] + _quantity <= maxPurchaseableCount,
             "This user has already minted a token"
         );
         require(msg.value == price * _quantity, "Insufficient price");
@@ -95,9 +103,9 @@ contract BobbyOrrDrop is
             _safeMint(msg.sender, nextTokenId);
 
             if (isAddress) {
-                hasUserMintedAddress[msg.sender] = true;
+                hasUserMintedAddress[msg.sender]++;
             } else {
-                hasUserMintedSmartmint[_userId] = true;
+                hasUserMintedSmartmint[_userId]++;
             }
 
             emit Minted(msg.sender, _userId, nextTokenId);
@@ -114,6 +122,10 @@ contract BobbyOrrDrop is
         require(_maxSupply > nextTokenId, "Invalid maxSupply updating request");
 
         maxSupply = _maxSupply;
+    }
+
+    function setMaxPurchaseableCount(uint _maxPurchaseableCount) external onlyOwner {
+        maxPurchaseableCount = _maxPurchaseableCount;
     }
 
     function setBaseURI(string calldata _uri) external onlyOwner {
