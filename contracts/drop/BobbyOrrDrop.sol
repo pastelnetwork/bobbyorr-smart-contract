@@ -29,11 +29,11 @@ contract BobbyOrrDrop is
     uint256 public maxPurchaseableCount;
     mapping(uint256 => bool) public isFanClubSmartmint;
     mapping(uint256 => bool) public isWhitelistedSmartmint;
-    mapping(uint256 => uint256) public hasUserMintedSmartmint;
+    mapping(uint256 => uint8) public hasUserMintedSmartmint;
 
     mapping(address => bool) public isFanClubAddress;
     mapping(address => bool) public isWhitelistedAddress;
-    mapping(address => uint256) public hasUserMintedAddress;
+    mapping(address => uint8) public hasUserMintedAddress;
 
     event Minted(address indexed _to, uint256 _userId, uint256 _tokenId);
     event BaseURIChanged(string _uri);

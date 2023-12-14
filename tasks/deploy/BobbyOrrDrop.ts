@@ -89,12 +89,14 @@ task("test:checkFanClubAddress")
     console.log(response);
   });
 
-task("test:checkAbletoMintNFTCount")
+task("test:checkMaxQuantity")
   .addParam("address", "Address")
   .setAction(async function (taskArguments: TaskArguments, hre) {
     const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
 
-    const response = await contract.hasUserMintedAddress(20373);
+    // const response = await contract.hasUserMintedSmartmint[20373];
+    const response = await contract.hasUserMintedSmartmint(20373);
+    // const response = await contract.getMaxQuantity(20373, "0x185b3F6618A50122C70FD100C7Aac729621B8a25");
 
     console.log(response);
   });
