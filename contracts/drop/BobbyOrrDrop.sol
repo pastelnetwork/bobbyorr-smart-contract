@@ -81,7 +81,7 @@ contract BobbyOrrDrop is
         cascadeUrls = _cascadeUrls;
     }
 
-    function getCascadeUrl(uint256 _tokenId) public view {
+    function getCascadeUrl(uint256 _tokenId) public view returns (string memory) {
         require(_tokenId > 0 && _tokenId < maxSupply, "Invalid token Id");
 
         return cascadeUrls[_tokenId];
