@@ -85,14 +85,6 @@ const config: HardhatUserConfig = {
           privateKey: privateKey || "",
           balance: ethers.utils.parseEther("1000").toString(),
         },
-        {
-          privateKey: process.env.KEVIN_PRIVATE_KEY || "",
-          balance: ethers.utils.parseEther("1000").toString(),
-        },
-        {
-          privateKey: process.env.BOB_PRIVATE_KEY || "",
-          balance: ethers.utils.parseEther("1000").toString(),
-        },
       ],
       chainId: chainIds.hardhat,
     },
