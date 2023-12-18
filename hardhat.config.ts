@@ -100,7 +100,7 @@ const config: HardhatUserConfig = {
     avalanche: getChainConfig("avalanche"),
     bsc: getChainConfig("bsc", process.env.BSC_MAINNET_URL),
     tbsc: getChainConfig("tbsc", process.env.BSC_TESTNET_URL),
-    goerli: getChainConfig("goerli"),
+    goerli: getChainConfig("goerli", process.env.GOERLI_TESTNET_URL),
     kovan: getChainConfig("kovan"),
     mainnet: getChainConfig("mainnet"),
     optimism: getChainConfig("optimism"),
