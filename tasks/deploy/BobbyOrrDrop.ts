@@ -22,10 +22,10 @@ task("deploy:BobbyOrrDrop")
       await upgrades.deployProxy(dropFactory, [
         taskArguments.name,
         taskArguments.symbol,
-        taskArguments.maxSupply,
-        taskArguments.maxMintPerTx,
-        taskArguments.royalty,
-        taskArguments.baseURI,
+        parseInt(taskArguments.maxSupply, 10),
+        parseInt(taskArguments.maxMintPerTx, 10),
+        parseInt(taskArguments.royalty, 10),
+        taskArguments.baseUri,
         taskArguments.primaryWallet,
       ])
     );
