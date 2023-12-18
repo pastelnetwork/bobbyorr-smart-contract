@@ -13,7 +13,7 @@ task("deploy:BobbyOrrDrop")
   .addParam("maxSupply", "Max supply of the contract")
   .addParam("maxMintPerTx", "Max mint per transaction")
   .addParam("royalty", "Royalty percentage")
-  .addParam("baseURI", "Base URI of the contract")
+  .addParam("baseUri", "Base URI of the contract")
   .addParam("primaryWallet", "Primary wallet address")
   .setAction(async function (taskArguments: TaskArguments, { ethers, upgrades }) {
     const dropFactory: BobbyOrrDrop__factory = <BobbyOrrDrop__factory>await ethers.getContractFactory("BobbyOrrDrop");
