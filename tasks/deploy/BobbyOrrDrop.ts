@@ -116,7 +116,7 @@ task("test:setWhiteListAddresses")
     console.log(answer);
   });
 
-task("test:checkFanClubAddress")
+task("test:checkFCSmartmint")
   .addParam("address", "Address")
   .addParam("user", "User id")
   .setAction(async function (taskArguments: TaskArguments, hre) {
@@ -127,7 +127,7 @@ task("test:checkFanClubAddress")
     console.log(response);
   });
 
-task("test:checkFanClubAddress")
+task("test:checkFCAddress")
   .addParam("address", "Address")
   .addParam("wallet", "User wallet")
   .setAction(async function (taskArguments: TaskArguments, hre) {
