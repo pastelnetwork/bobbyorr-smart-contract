@@ -203,7 +203,7 @@ contract BobbyOrrDrop is
 
     function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address, uint256) {
         require(_exists(_tokenId), "Invalid token id");
-        uint256 _royalties = (_salePrice * royaltiesPercentage) / 100;
+        uint256 _royalties = (_salePrice * royaltiesPercentage) / 10000;
         return (primaryWallet, _royalties);
     }
 
