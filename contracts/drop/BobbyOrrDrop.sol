@@ -24,9 +24,12 @@ contract BobbyOrrDrop is
     string public baseURI;
     uint256 public price;
     address public primaryWallet;
-    uint256 public maxSupply;
-    uint256 public stage; // 1 => FanClub, 2 => PrivateSale, 3 => PublicSale
-    uint256 public maxPurchaseableCount;
+    uint256 public royaltiesPercentage;
+    uint32 public maxSupply;
+    uint8 public stage; // 1 => FanClub, 2 => PrivateSale, 3 => PublicSale
+    uint8 public maxPurchaseableCount;
+    string[] public cascadeUrls;
+
     mapping(uint256 => bool) public isFanClubSmartmint;
     mapping(uint256 => bool) public isWhitelistedSmartmint;
     mapping(uint256 => uint8) public hasUserMintedSmartmint;
@@ -34,6 +37,8 @@ contract BobbyOrrDrop is
     mapping(address => bool) public isFanClubAddress;
     mapping(address => bool) public isWhitelistedAddress;
     mapping(address => uint8) public hasUserMintedAddress;
+
+    mapping(uint256 => string) public getCascadeUrl;
 
     event Minted(address indexed _to, uint256 _userId, uint256 _tokenId);
     event BaseURIChanged(string _uri);
@@ -49,13 +54,15 @@ contract BobbyOrrDrop is
     function initialize(
         string memory _name,
         string memory _symbol,
-        uint256 _maxSupply,
-        uint256 _maxPurchaseableCount,
+        uint32 _maxSupply,
+        uint8 _maxPurchaseableCount,
+        uint256 _royaltiesPercentage,
         string memory _baseTokenURI,
         address _primaryWallet
     ) public initializer {
         require(!initialized, "Already initialized");
         require(_primaryWallet != address(0), "Invalid primary, or pastel wallet address");
+        require(_royaltiesPercentage < 100, "Invalid royalties");
 
         __ERC721_init(_name, _symbol);
         __Ownable_init();
@@ -64,9 +71,16 @@ contract BobbyOrrDrop is
 
         maxSupply = _maxSupply;
         maxPurchaseableCount = _maxPurchaseableCount;
+        royaltiesPercentage = _royaltiesPercentage;
         nextTokenId = 1;
         initialized = true;
         stage = 0;
+    }
+
+    function initCascadeUrls(string[] memory _cascadeUrls) public onlyOwner {
+        require(_cascadeUrls.length == maxSupply, "Invalid cascade ids");
+
+        cascadeUrls = _cascadeUrls;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -82,19 +96,19 @@ contract BobbyOrrDrop is
         if (stage == 1) {
             require(
                 isFanClubSmartmint[_userId] || (isAddress && isFanClubAddress[msg.sender]),
-                "Invalid mint request from not fan club user"
+                "You are not a fan club user, you are unable to mint during this stage"
             );
         } else if (stage == 2) {
             require(
                 isWhitelistedSmartmint[_userId] || (isAddress && isWhitelistedAddress[msg.sender]),
-                "Invalid mint request from not whitelisted user"
+                "You are not a FCFS user, you are unable to mint during this stage"
             );
         }
         require(
             isAddress
                 ? hasUserMintedAddress[msg.sender] + _quantity <= maxPurchaseableCount
                 : hasUserMintedSmartmint[_userId] + _quantity <= maxPurchaseableCount,
-            "This user has already minted a token"
+            "You are not able to purchase those tokens"
         );
         require(msg.value == price * _quantity, "Insufficient price");
 
@@ -118,13 +132,13 @@ contract BobbyOrrDrop is
         return baseURI;
     }
 
-    function setMaxSupply(uint256 _maxSupply) external onlyOwner {
+    function setMaxSupply(uint8 _maxSupply) external onlyOwner {
         require(_maxSupply > nextTokenId, "Invalid maxSupply updating request");
 
         maxSupply = _maxSupply;
     }
 
-    function setMaxPurchaseableCount(uint _maxPurchaseableCount) external onlyOwner {
+    function setMaxPurchaseableCount(uint8 _maxPurchaseableCount) external onlyOwner {
         maxPurchaseableCount = _maxPurchaseableCount;
     }
 
@@ -144,7 +158,7 @@ contract BobbyOrrDrop is
         primaryWallet = _primaryWallet;
     }
 
-    function setStage(uint256 _stage, uint256 _price) external onlyOwner {
+    function setStage(uint8 _stage, uint256 _price) external onlyOwner {
         require(_stage < 4 && _stage > 0 && _stage > stage, "Invalid stage");
 
         stage = _stage;
@@ -181,6 +195,12 @@ contract BobbyOrrDrop is
 
     function totalSupply() external view returns (uint256) {
         return nextTokenId - 1;
+    }
+
+    function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address, uint256) {
+        require(_exists(_tokenId), "Invalid token id");
+        uint256 _royalties = (_salePrice * royaltiesPercentage) / 100;
+        return (primaryWallet, _royalties);
     }
 
     function withdraw() external onlyOwner nonReentrant {
