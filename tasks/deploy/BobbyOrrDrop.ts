@@ -118,10 +118,11 @@ task("test:setWhiteListAddresses")
 
 task("test:checkFanClubAddress")
   .addParam("address", "Address")
+  .addParam("user", "User id")
   .setAction(async function (taskArguments: TaskArguments, hre) {
     const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
 
-    const response = await contract.isFanClubSmartmint(20373);
+    const response = await contract.isFanClubSmartmint(parseInt(taskArguments.user, 10));
 
     console.log(response);
   });
