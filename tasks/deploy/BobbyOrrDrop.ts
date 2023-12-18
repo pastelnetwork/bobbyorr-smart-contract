@@ -77,7 +77,7 @@ task("test:setFanClubAddresses")
       "0xd8EEBcC727dEc057c0bF7831086A1615859c1B98",
       "0x30D2CA7476cBbA5D4b6e7f8EB64A5047BE443706",
       "0xde888435d018aAfDb1b47027DC0f766821CC8122",
-      "0x5698d48CD64924f350E9dEDCE77C9C01882d0745",
+      "0x4E6e15D3F408985e3F90798CE30a756FeFa82963",
     ]);
 
     const answer = await response.wait();
