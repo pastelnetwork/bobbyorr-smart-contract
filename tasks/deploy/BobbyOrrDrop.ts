@@ -127,6 +127,17 @@ task("test:checkFanClubAddress")
     console.log(response);
   });
 
+task("test:checkFanClubAddress")
+  .addParam("address", "Address")
+  .addParam("wallet", "User wallet")
+  .setAction(async function (taskArguments: TaskArguments, hre) {
+    const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
+
+    const response = await contract.isFanClubAddress(taskArguments.wallet);
+
+    console.log(response);
+  });
+
 task("test:checkMaxQuantity")
   .addParam("address", "Address")
   .setAction(async function (taskArguments: TaskArguments, hre) {
