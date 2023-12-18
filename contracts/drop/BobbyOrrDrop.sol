@@ -38,8 +38,6 @@ contract BobbyOrrDrop is
     mapping(address => bool) public isWhitelistedAddress;
     mapping(address => uint8) public hasUserMintedAddress;
 
-    mapping(uint256 => string) public getCascadeUrl;
-
     event Minted(address indexed _to, uint256 _userId, uint256 _tokenId);
     event BaseURIChanged(string _uri);
 
@@ -81,6 +79,12 @@ contract BobbyOrrDrop is
         require(_cascadeUrls.length == maxSupply, "Invalid cascade ids");
 
         cascadeUrls = _cascadeUrls;
+    }
+
+    function getCascadeUrl(uint256 _tokenId) public view {
+        require(_tokenId > 0 && _tokenId < maxSupply, "Invalid token Id");
+
+        return cascadeUrls[_tokenId];
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
