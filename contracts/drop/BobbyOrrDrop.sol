@@ -60,7 +60,7 @@ contract BobbyOrrDrop is
     ) public initializer {
         require(!initialized, "Already initialized");
         require(_primaryWallet != address(0), "Invalid primary, or pastel wallet address");
-        require(_royaltiesPercentage < 100, "Invalid royalties");
+        require(_royaltiesPercentage < 10000, "Invalid royalties");
 
         __ERC721_init(_name, _symbol);
         __Ownable_init();
