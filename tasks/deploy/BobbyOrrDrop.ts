@@ -172,3 +172,15 @@ task("test:mint")
 
     console.log(answer);
   });
+
+task("test:withdraw")
+  .addParam("address", "Contract address")
+  .setAction(async function (taskArguments: TaskArguments, hre) {
+    const contract: Contract = await getContract("BobbyOrrDrop", taskArguments.address, hre);
+
+    const response = await contract.withdraw();
+
+    const answer = await response.wait();
+
+    console.log(answer);
+  });
