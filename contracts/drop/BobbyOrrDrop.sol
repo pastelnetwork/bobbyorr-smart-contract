@@ -60,7 +60,7 @@ contract BobbyOrrDrop is
     ) public initializer {
         require(!initialized, "Already initialized");
         require(_primaryWallet != address(0), "Invalid primary, or pastel wallet address");
-        require(_royaltiesPercentage < 100, "Invalid royalties");
+        require(_royaltiesPercentage < 10000, "Invalid royalties");
 
         __ERC721_init(_name, _symbol);
         __Ownable_init();
@@ -203,7 +203,7 @@ contract BobbyOrrDrop is
 
     function royaltyInfo(uint256 _tokenId, uint256 _salePrice) external view returns (address, uint256) {
         require(_exists(_tokenId), "Invalid token id");
-        uint256 _royalties = (_salePrice * royaltiesPercentage) / 100;
+        uint256 _royalties = (_salePrice * royaltiesPercentage) / 10000;
         return (primaryWallet, _royalties);
     }
 

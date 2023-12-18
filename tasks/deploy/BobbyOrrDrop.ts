@@ -6,25 +6,34 @@ import { BobbyOrrDrop__factory } from "../../src/types/factories/BobbyOrrDrop__f
 
 import { getContract } from "../helpers";
 import { Contract } from "ethers";
-
 import fs from "fs";
 
-task("deploy:BobbyOrrDrop").setAction(async function (taskArguments: TaskArguments, { ethers, upgrades }) {
-  const dropFactory: BobbyOrrDrop__factory = <BobbyOrrDrop__factory>await ethers.getContractFactory("BobbyOrrDrop");
+task("deploy:BobbyOrrDrop")
+  .addParam("name", "Name of the contract")
+  .addParam("symbol", "Symbol of the contract")
+  .addParam("maxSupply", "Max supply of the contract")
+  .addParam("maxMintPerTx", "Max mint per transaction")
+  .addParam("royalty", "Royalty percentage")
+  .addParam("baseUri", "Base URI of the contract")
+  .addParam("primaryWallet", "Primary wallet address")
+  .setAction(async function (taskArguments: TaskArguments, { ethers, upgrades }) {
+    const dropFactory: BobbyOrrDrop__factory = <BobbyOrrDrop__factory>await ethers.getContractFactory("BobbyOrrDrop");
 
-  const bobbyOrrDrop: BobbyOrrDrop = <BobbyOrrDrop>await upgrades.deployProxy(dropFactory, [
-    "BobbyOrr",
-    "BOB",
-    1444,
-    3,
-    7.5,
-    "ipfs://Qmdt2pqCLefbM9hdRuvxyf5PtzBxvK2No4w5xVXU89GwKi/",
-    "0xFFf50b1b9154b0631591DAB746c5Fc8f41Dc44Bd", // primary wallet
-  ]);
+    const bobbyOrrDrop: BobbyOrrDrop = <BobbyOrrDrop>(
+      await upgrades.deployProxy(dropFactory, [
+        taskArguments.name,
+        taskArguments.symbol,
+        parseInt(taskArguments.maxSupply, 10),
+        parseInt(taskArguments.maxMintPerTx, 10),
+        parseInt(taskArguments.royalty, 10),
+        taskArguments.baseUri,
+        taskArguments.primaryWallet,
+      ])
+    );
 
-  await bobbyOrrDrop.deployed();
-  console.log("BobbyOrrDrop deployed to: ", bobbyOrrDrop.address);
-});
+    await bobbyOrrDrop.deployed();
+    console.log("BobbyOrrDrop deployed to: ", bobbyOrrDrop.address);
+  });
 
 task("test:setFanClubSmartmint")
   .addParam("address", "Address")

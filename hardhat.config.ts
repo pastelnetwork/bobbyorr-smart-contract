@@ -85,14 +85,6 @@ const config: HardhatUserConfig = {
           privateKey: privateKey || "",
           balance: ethers.utils.parseEther("1000").toString(),
         },
-        {
-          privateKey: process.env.KEVIN_PRIVATE_KEY || "",
-          balance: ethers.utils.parseEther("1000").toString(),
-        },
-        {
-          privateKey: process.env.BOB_PRIVATE_KEY || "",
-          balance: ethers.utils.parseEther("1000").toString(),
-        },
       ],
       chainId: chainIds.hardhat,
     },
@@ -100,7 +92,7 @@ const config: HardhatUserConfig = {
     avalanche: getChainConfig("avalanche"),
     bsc: getChainConfig("bsc", process.env.BSC_MAINNET_URL),
     tbsc: getChainConfig("tbsc", process.env.BSC_TESTNET_URL),
-    goerli: getChainConfig("goerli"),
+    goerli: getChainConfig("goerli", process.env.GOERLI_TESTNET_URL),
     kovan: getChainConfig("kovan"),
     mainnet: getChainConfig("mainnet"),
     optimism: getChainConfig("optimism"),
