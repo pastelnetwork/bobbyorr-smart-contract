@@ -19,6 +19,14 @@ export const getProvider = () => {
     return ethers.getDefaultProvider(getEnvVariable("MUMBAI_URL", ""), {
       infura: getEnvVariable("INFURA_KEY"),
     });
+  } else if (getEnvVariable("NETWORK", "goerli") === "goerli") {
+    return ethers.getDefaultProvider(getEnvVariable("GOERLI_TESTNET_URL", ""), {
+      infura: getEnvVariable("INFURA_KEY"),
+    });
+  } else if (getEnvVariable("NETWORK", "mainnet") === "mainnet") {
+    return ethers.getDefaultProvider(getEnvVariable("MAINNET_URL", ""), {
+      infura: getEnvVariable("INFURA_KEY"),
+    });
   } else {
     return ethers.getDefaultProvider(getEnvVariable("NETWORK", "rinkeby"), {
       infura: getEnvVariable("INFURA_KEY"),
